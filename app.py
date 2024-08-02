@@ -1,24 +1,15 @@
 import streamlit as st
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import os
 import tempfile
 from langchain.vectorstores import FAISS
-
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
-from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.prompts import PromptTemplate
-from langchain.callbacks.manager import CallbackManager
-from langchain.chat_models import ChatOllama
+from langchain.chains import RetrievalQA
 from langchain.document_loaders import PyMuPDFLoader
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import google.generativeai as genai
 
 class FileIngestor:
@@ -62,7 +53,7 @@ def load_embedding_model(model_path, normalize_embedding=True):
 # Function for creating embeddings using FAISS
 def create_embeddings(chunks, embedding_model):
     vectorstore = FAISS.from_documents(chunks, embedding_model)
-    vectorstore.save_local("faiss_index")
+    return vectorstore
 
 # Creating the chain for Question Answering
 def load_qa_chain(retriever, llm, prompt):
@@ -87,9 +78,13 @@ def user_input(user_question, embedding_model, api_key):
 
     Answer:
     """
-    new_db = FAISS.load_local("faiss_index", embedding_model, allow_dangerous_deserialization=True)
+    if 'vectorstore' not in st.session_state:
+        st.error("No PDF data available. Please upload and process PDF files first.")
+        return
+
+    vectorstore = st.session_state.vectorstore
     prompt = PromptTemplate(template=prompt_template, input_variables=["question", "context"])
-    retriever = new_db.as_retriever(search_type="similarity", search_kwargs={'k': 4})
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={'k': 4})
     genai.configure(api_key=api_key)
     llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=api_key, temperature=0.3)
 
@@ -102,21 +97,27 @@ def main():
     st.header("Chat with PDF using Gemini💁")
     embed = load_embedding_model(model_path="all-MiniLM-L6-v2")
 
-    user_question = st.text_input("Ask a Question from the PDF Files")
+    st.sidebar.title("Menu:")
+    pdf_docs = st.sidebar.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
     api_key = st.sidebar.text_input("Enter your Google API Key", type="password")
 
-    if user_question and api_key:
-        user_input(user_question, embed, api_key)
-
-    with st.sidebar:
-        st.title("Menu:")
-        pdf_docs = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
-        if st.button("Submit & Process"):
+    if st.sidebar.button("Submit & Process"):
+        if pdf_docs:
             with st.spinner("Processing..."):
                 raw_text = load_pdf_data(pdf_docs)
                 text_chunks = split_docs(raw_text)
-                create_embeddings(text_chunks, embed)
+                vectorstore = create_embeddings(text_chunks, embed)
+                st.session_state.vectorstore = vectorstore
                 st.success("Done")
+        else:
+            st.error("Please upload PDF files before processing.")
+
+    user_question = st.text_input("Ask a Question from the PDF Files")
+    if user_question and api_key:
+        if 'vectorstore' in st.session_state:
+            user_input(user_question, embed, api_key)
+        else:
+            st.error("Please process PDF files first to create the FAISS index.")
 
 if __name__ == "__main__":
     main()
