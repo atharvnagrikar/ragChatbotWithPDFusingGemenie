@@ -4,7 +4,7 @@ python-dotenv
 langchain
 PyPDF2
 chromadb
-faiss
+faiss-cpu
 langchain_google_genai
 sentence-transformers
 rank_bm25
