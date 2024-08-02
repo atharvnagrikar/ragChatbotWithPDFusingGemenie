@@ -1,0 +1,12 @@
+python==3.10
+streamlit
+google-generativeai
+python-dotenv
+langchain
+PyPDF2
+faiss-gpu
+langchain_google_genai
+sentence-transformers
+rank_bm25
+langchain-community
+pymupdf
