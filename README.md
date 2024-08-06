@@ -13,7 +13,7 @@ This project allows you to interact with PDF documents using a Streamlit app. Th
 To run this application, you'll need:
 
 - **Google API Key**: You'll need a Google API key to access Google’s Generative AI services.
-- **Python 3.7+**: Ensure you have Python 3.7 or later installed.
+- **Python 3.10.14**: Ensure you have Python 3.7 or later installed.
 
 ## Installation
 
