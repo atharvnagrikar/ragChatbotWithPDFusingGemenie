@@ -37,16 +37,6 @@ To run this application, you'll need:
     pip install -r requirements.txt
     ```
 
-4. **Setup Environment Variables**:
-
-    Create a `.env` file in the root directory and add your Google API key:
-
-    ```ini
-    GOOGLE_API_KEY=your_google_api_key
-    ```
-
-    Make sure to replace `your_google_api_key` with your actual Google API key.
-
 ## Usage
 
 1. **Run the Streamlit App**:
@@ -76,3 +66,6 @@ To run this application, you'll need:
 
 - If you encounter any issues with the application, ensure that all environment variables are correctly set and that your API key is valid.
 - Check the logs for any errors during the execution of the Streamlit app for further debugging.
+
+
+
