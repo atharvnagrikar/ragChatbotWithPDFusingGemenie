@@ -75,7 +75,6 @@ def user_input(user_question, embedding_model, api_key):
     provided context just say, "answer is not available in the context", don't provide the wrong answer\n\n
     Context:\n {context}?\n
     Question: \n{question}\n
-
     Answer:
     """
     if 'vectorstore' not in st.session_state:
